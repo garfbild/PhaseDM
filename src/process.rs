@@ -1,13 +1,5 @@
-use core::time;
-
 use pyo3::prelude::*;
-use numpy::ndarray::{Array1, ArrayD, ArrayView1, ArrayViewD, ArrayViewMutD, Zip};
-use numpy::{
-    datetime::{units, Timedelta},
-    Complex64, IntoPyArray, PyArray1, PyArrayDyn, PyArrayMethods, PyReadonlyArray1,
-    PyReadonlyArrayDyn, PyReadwriteArray1, PyReadwriteArrayDyn,
-};
-use rayon::prelude::*;
+use numpy::ndarray::{Array1, ArrayView1};
 
 pub fn generate_freqs(min_freq: f64, max_freq: f64, n_freqs: u64) -> Array1<f64> {
     let step = (max_freq - min_freq) / (n_freqs as f64 - 1.0);
@@ -28,7 +20,7 @@ pub fn compute_theta(time: ArrayView1<f64>, signal: ArrayView1<f64>, freq: f64, 
     };
 
     // calculate the mean of each of the bins
-    let mut bin_means: Vec<f64> = bin_sums.iter()
+    let bin_means: Vec<f64> = bin_sums.iter()
     .zip(bin_counts.iter())
     .map(|(&sum, &count)| {
         if count > 0 {
