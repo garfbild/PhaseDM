@@ -1,6 +1,5 @@
-use numpy::dtype;
-use numpy::{PyArray, PyUntypedArrayMethods, IntoPyArray, PyArray1, npyffi::NPY_TYPES, PyArrayMethods,PyReadonlyArray1};
-use numpy::ndarray::{Array1, ArrayD, ArrayView1, ArrayViewD, ArrayViewMutD, Zip};
+use numpy::{PyArray1,PyArrayMethods,PyReadonlyArray1};
+use numpy::ndarray::ArrayView1;
 use pyo3::{Python, PyResult, PyAny, exceptions::PyTypeError, exceptions::PyValueError, types::PyType};
 use pyo3::prelude::*;
 
