@@ -3,6 +3,7 @@ use numpy::{IntoPyArray, PyArray1,PyReadonlyArray1,};
 
 mod error;
 mod process;
+pub mod timing;
 
 /// A Python module implemented in Rust.
 #[pymodule]
@@ -44,6 +45,8 @@ fn pydm(m: &Bound<'_, PyModule>) -> PyResult<()> {
             thetas.push(theta);
         };
         let freqs = if kind == "M" { freqs.iter().map(|x| x/1e9).collect() } else { freqs };
+
+        println!("{}", timing::get_timing_report());
 
         Ok((freqs.into_pyarray(py),thetas.into_pyarray(py)))
     }

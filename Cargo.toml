@@ -11,4 +11,6 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = "0.23.3"
 numpy = "0.23"
+ndarray = { version = "0.15", features = ["rayon"] }
 rayon = "1.8"
+lazy_static = "1.4.0"
