@@ -31,7 +31,7 @@ for i in tqdm(np.linspace(1,5,20)):
     power.append(i)
     n_freqs = int(10**(i))
     
-    freq_step = (max_freq-min_freq)/n_freqs
+    freq_step   = (max_freq-min_freq)/n_freqs
     pydm_run = 0.0
     pdmpy_run = 0.0
 
