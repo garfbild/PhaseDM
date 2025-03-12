@@ -38,7 +38,7 @@ pub fn check_min_less_max(min_freq: f64, max_freq: f64, n_freqs:u64) -> PyResult
     }
 }
 
-pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyResult<(PyReadonlyArray1<'py, f64>, String)> {
+pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyResult<PyReadonlyArray1<'py, f64>> {
     // Check if time is a numpy array
     let np = py.import("numpy")?;
     let ndarray_attr = np.getattr("ndarray")?;
@@ -60,11 +60,11 @@ pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyRes
             let float64_attr = np.getattr("float64")?;
             let float_array = np.call_method1("array", (time, float64_attr))?;
             let array_bound = float_array.downcast::<PyArray1<f64>>()?;
-            return Ok((array_bound.readonly(),kind));
+            return Ok(array_bound.readonly());
         }
         // It's already float64
         let array_bound = time.downcast::<PyArray1<f64>>()?;
-        return Ok((array_bound.readonly(),kind));
+        return Ok(array_bound.readonly());
     } else if kind == "M" {
         // It's a datetime64 array, convert to float64
         // This part depends on how you want to interpret datetime values
@@ -79,7 +79,7 @@ pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyRes
             array_slice.iter().map(|&x| (x-min_time) / 1e9).collect()
         };
 
-        return Ok((array_vec.into_pyarray(py).readonly(),kind));
+        return Ok(array_vec.into_pyarray(py).readonly());
     } else {
         return Err(PyTypeError::new_err(
             "time must be either a numpy array of float64 or datetime64"

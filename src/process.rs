@@ -17,7 +17,9 @@ pub fn compute_theta_st(time: ArrayView1<f64>, signal: ArrayView1<f64>, freq: f6
     });
 
     let s = n_bins as f64/inv_freq;
-    let bin_index: Vec<u64> = time_section!("binning_operation", {phase.iter().map(|x| (x * s) as u64).collect()});
+    let bin_index: Vec<u64> = time_section!("binning_operation", {
+        phase.iter().map(|x| (x * s) as u64).collect()
+    });
     
     let mut bin_counts = vec![0_u64; n_bins as usize];
     let mut bin_sums = vec![0_f64; n_bins as usize];

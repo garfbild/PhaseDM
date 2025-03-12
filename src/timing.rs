@@ -2,7 +2,6 @@ use std::time::{Duration, Instant};
 use std::collections::HashMap;
 use std::cell::RefCell;
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
-use rayon::current_thread_index;
 
 // Global verbosity flag
 lazy_static::lazy_static! {
@@ -12,7 +11,6 @@ lazy_static::lazy_static! {
 pub struct ThreadLocalTimer {
     timers: RefCell<HashMap<String, Duration>>,
     start_times: RefCell<HashMap<String, Instant>>,
-    thread_id: usize,
 }
 
 // A global collector to gather results from all threads
@@ -30,7 +28,6 @@ impl ThreadLocalTimer {
         ThreadLocalTimer {
             timers: RefCell::new(HashMap::new()),
             start_times: RefCell::new(HashMap::new()),
-            thread_id: current_thread_index().unwrap_or(0),
         }
     }
 
@@ -109,7 +106,7 @@ impl ThreadLocalTimer {
         // Force execution on all threads to flush their data
         // Note: this may not work if the thread pool is idle
         rayon::scope(|s| {
-            for i in 0..rayon::current_num_threads() {
+            for _ in 0..rayon::current_num_threads() {
                 s.spawn(move |_| {
                     ThreadLocalTimer::flush_current_thread();
                 });

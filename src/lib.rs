@@ -27,7 +27,7 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
             timing::enable_timing(true);
         }
         // kind is the type of the time array, floating point array or a datetime array
-        let (time, kind) = error::check_time_array(py, time)?;
+        let time = error::check_time_array(py, time)?;
 
         // if the time is date time "M" then the units are nanoseconds
         // its easier to multiply the frequency bounds
@@ -43,16 +43,10 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         
         let freqs = process::generate_freqs(min_freq, max_freq, n_freqs);
 
-        let thetas: Result<Vec<_>, _> = if n_freqs as f64 >= f64::powf(10.0_f64, 0.0){
-            freqs.par_iter()
-            .map(|freq| process::compute_theta_st(time, signal, *freq, n_bins))
-            .collect()
-        } else {
-            freqs.iter()
-            .map(|freq| process::compute_theta_st(time, signal, *freq, n_bins))
-            .collect()
-        };
-        let thetas = thetas?;
+        let thetas: Vec<f64> = freqs.par_iter()
+        .map(|freq| process::compute_theta_st(time, signal, *freq, n_bins))
+        .collect::<Result<Vec<f64>, _>>()?;
+        
         if verbose != 0{
             println!("{}", timing::get_timing_report());
         }

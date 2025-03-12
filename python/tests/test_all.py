@@ -1,4 +1,3 @@
-import pytest
 from phasedm import pdm as rust_pdm
 from pdmpy import pdm as c_pdm
 import numpy as np
