@@ -27,7 +27,7 @@ PyDM leverages several technologies to achieve its performance and functionality
 
 ### Option 1: Install from PyPI
 ```bash
-pip install pydm
+pip install phasedm
 ```
 
 ### Option 2: Install from source
@@ -61,7 +61,7 @@ maturin develop --release
 ## Usage
 
 ```python
-from pydm import pdm as rust_pdm
+from phasedm import pdm as rust_pdm
 from pdmpy import pdm as c_pdm
 import numpy as np
 import pandas as pd
