@@ -128,8 +128,6 @@ plt.savefig('theta_c.png')
 
 print(f"{pdmpy_time/pydm_time} x speed-up" )
 ```
-##
-Takes obvious inspiration from PY-PDM https://pypi.org/project/Py-PDM/ and Stellingwerfs orginal version https://www.stellingwerf.com/rfs-bin/index.cgi?action=PageView&id=34
 ## Comparison with Other Implementations
 
 | Feature | PyDM | pdm-py |
@@ -145,6 +143,8 @@ Takes obvious inspiration from PY-PDM https://pypi.org/project/Py-PDM/ and Stell
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Reference
+Takes obvious inspiration from PY-PDM https://pypi.org/project/Py-PDM/ and Stellingwerfs orginal version https://www.stellingwerf.com/rfs-bin/index.cgi?action=PageView&id=34
 ## License
 
 [Insert license information here]
