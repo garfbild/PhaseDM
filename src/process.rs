@@ -1,66 +1,33 @@
 use pyo3::prelude::*;
-use numpy::ndarray::{Array1, ArrayView1};
+use numpy::ndarray::ArrayView1;
 use rayon::prelude::*;
-use std::collections::HashMap;
 
-use crate::timing::{get_timing_report, GLOBAL_TIMER};
 use crate::time_section;
 
-pub fn generate_freqs(min_freq: f64, max_freq: f64, n_freqs: u64) -> Array1<f64> {
+pub fn generate_freqs(min_freq: f64, max_freq: f64, n_freqs: u64) -> Vec<f64>{
     let step = (max_freq - min_freq) / (n_freqs as f64 - 1.0);
-    let freq_vec: Vec<f64> = (0..n_freqs).map(|i| min_freq + (i as f64) * step).collect();
-    Array1::from(freq_vec)
+    let freq_vec: Vec<f64> = (0..n_freqs).into_par_iter().map(|i| min_freq + (i as f64) * step).collect();
+    freq_vec
 }
 
+pub fn compute_theta_st(time: ArrayView1<f64>, signal: ArrayView1<f64>, freq: f64, n_bins: u64) -> PyResult<f64>{
+    let inv_freq = 1.0/freq;
+    let phase: Vec<f64>= time_section!("phase calculation", {
+        time.iter().map(|&x| x % inv_freq).collect()
+    });
 
-pub fn compute_theta(time: ArrayView1<f64>, signal: ArrayView1<f64>, freq: f64, n_bins: u64) -> PyResult<f64>{
-    // convert ArrayView to a slice to avoid copying and performing parallel iter
-    let phase: Vec<f64>= time_section!("phase calculation", { if let Some(time_slice) = time.as_slice() {
-        time_slice.par_iter().map(|x| (x% freq)/freq).collect()
-    } else {
-        time.iter().map(|x| (x% freq)/freq).collect()
-    }});
-
-    let bin_index: Vec<u64> = time_section!("binning_operation", {phase.par_iter().map(|x| (x * n_bins as f64) as u64).collect()});
+    let s = n_bins as f64/inv_freq;
+    let bin_index: Vec<u64> = time_section!("binning_operation", {phase.iter().map(|x| (x * s) as u64).collect()});
     
     let mut bin_counts = vec![0_u64; n_bins as usize];
     let mut bin_sums = vec![0_f64; n_bins as usize];
     time_section!("bin_count_sum_operation", {
-    if bin_index.len() >= 1e7 as usize {
-        // Parallel implementation for large arrays
-        let updates: HashMap<usize, (u64, f64)> = (0..bin_index.len())
-            .into_par_iter()
-            .map(|i| {
-                let bin = bin_index[i] as usize;
-                let mut map = HashMap::new();
-                map.insert(bin, (1, signal[i]));
-                map
-            })
-            .reduce(
-                || HashMap::new(),
-                |mut acc, map| {
-                    for (bin, (count, sum)) in map {
-                        let entry = acc.entry(bin).or_insert((0, 0.0));
-                        entry.0 += count;
-                        entry.1 += sum;
-                    }
-                    acc
-                }
-            );
-        
-        // Apply the updates
-        for (bin, (count, sum)) in updates {
-            bin_counts[bin] += count;
-            bin_sums[bin] += sum;
-        }
-    } else {
-        // Serial implementation for smaller arrays
-        for (i, &bin) in bin_index.iter().enumerate() {
-            bin_counts[bin as usize] += 1;
-            bin_sums[bin as usize] += signal[i];
-        }
-    }
-    });
+    
+    // Serial implementation for smaller arrays
+    for (i, &bin) in bin_index.iter().enumerate() {
+        bin_counts[bin as usize] += 1;
+        bin_sums[bin as usize] += signal[i];
+    }});
 
     // calculate the mean of each of the bins
     let bin_means: Vec<f64> = bin_sums.iter()
@@ -80,39 +47,11 @@ pub fn compute_theta(time: ArrayView1<f64>, signal: ArrayView1<f64>, freq: f64, 
     let mut squared_difference: f64 = 0.0;
 
     time_section!("squared_diff_calculation", { 
-    if bin_index.len() > 1e7 as usize{
-    let (updates, total_squared_diff) = (0..bin_index.len())
-    .into_par_iter()
-    .map(|i| {
-        let bin = bin_index[i] as usize;
-        let mut map = HashMap::new();
-        let diff = bin_means[bin] - signal[i];
-        map.insert(bin, f64::powi(diff, 2));
-        (map, f64::powi(mean - signal[i], 2))
-    })
-    .reduce(
-        || (HashMap::new(), 0.0),
-        |mut acc, (map, sq_diff)| {
-            for (bin, sq_diff_bin) in map {
-                *acc.0.entry(bin).or_insert(0.0) += sq_diff_bin;
-            }
-            acc.1 += sq_diff;
-            acc
-        }
-    );
-
-    // Apply the updates
-    for (bin, sq_diff) in updates {
-    bin_squared_difference[bin] += sq_diff;
-    }
-    squared_difference += total_squared_diff;
-    } else {
     for (i, &bin) in bin_index.iter().enumerate() {
         bin_squared_difference[bin as usize] += f64::powi(bin_means[bin as usize] - signal[i],2);
         squared_difference += f64::powi(mean - signal[i], 2);
-    };
-    }
-    });
+    }});
+    
     Ok(bin_squared_difference.iter().sum::<f64>()/squared_difference)
     
 }

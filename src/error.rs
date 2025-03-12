@@ -1,4 +1,4 @@
-use numpy::{PyArray1,PyArrayMethods,PyReadonlyArray1};
+use numpy::{IntoPyArray, PyArray1, PyArrayMethods, PyReadonlyArray1};
 use numpy::ndarray::ArrayView1;
 use pyo3::{Python, PyResult, PyAny, exceptions::PyTypeError, exceptions::PyValueError, types::PyType};
 use pyo3::prelude::*;
@@ -18,16 +18,22 @@ pub fn check_matching_length(x: ArrayView1<'_, f64>, y: ArrayView1<'_, f64>) -> 
 
 pub fn check_min_less_max(min_freq: f64, max_freq: f64, n_freqs:u64) -> PyResult<()>{
     if min_freq > max_freq {
-        Err(PyValueError::new_err(format!(
+        return Err(PyValueError::new_err(format!(
             "frequency bound value mismatch: min_freq {}, max_freq {}",
             min_freq, 
             max_freq
-        )))
+        )));
     } else if min_freq == max_freq && n_freqs!=1 {
         return Err(PyValueError::new_err(format!(
             "frequency value mismatch: if you wish to test a single frequency then min_freq = max_freq and n=1"
         )));
-    }else {
+    } else if min_freq < 0_f64 || max_freq < 0_f64{
+        return Err(PyValueError::new_err(format!(
+            "frequency value issue: cannot interpret a negative frequncy {} or {}",
+            min_freq, 
+            max_freq
+        )))
+    } else {
         Ok(())
     }
 }
@@ -64,8 +70,16 @@ pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyRes
         // This part depends on how you want to interpret datetime values
         let float64_attr = np.getattr("float64")?;
         let float_array = np.call_method1("array", (time, float64_attr))?;
-        let array_bound = float_array.downcast::<PyArray1<f64>>()?;
-        return Ok((array_bound.readonly(),kind));
+        let array_bound = float_array.downcast::<PyArray1<f64>>()?.readonly();
+
+        //This is actually super important as it reduces the phase calculation by a lot
+        let min_time = array_bound.get(0).unwrap();
+        let array_vec: Vec<f64> = {
+            let array_slice =array_bound.as_slice()?;
+            array_slice.iter().map(|&x| (x-min_time) / 1e9).collect()
+        };
+
+        return Ok((array_vec.into_pyarray(py).readonly(),kind));
     } else {
         return Err(PyTypeError::new_err(
             "time must be either a numpy array of float64 or datetime64"
