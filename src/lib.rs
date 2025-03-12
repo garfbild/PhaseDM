@@ -8,10 +8,10 @@ pub mod timing;
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn pydm(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
     #[pyfn(m)]
     #[pyo3(name = "pdm")]
-    fn pdm_py<'py>(
+    fn pdm<'py>(
         py: Python<'py>,
         time: &Bound<'py, PyAny>,
         signal: PyReadonlyArray1<'py, f64>,
@@ -52,9 +52,6 @@ fn pydm(m: &Bound<'_, PyModule>) -> PyResult<()> {
             .map(|freq| process::compute_theta_st(time, signal, *freq, n_bins))
             .collect()
         };
-        // convert freq to seconds unit as expected
-        let freqs = if kind == "M" { freqs.par_iter().map(|x| x/1e9).collect() } else { freqs };
-
         let thetas = thetas?;
         if verbose != 0{
             println!("{}", timing::get_timing_report());

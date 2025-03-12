@@ -172,6 +172,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "945462a4b81e43c4e3ba96bd7b49d834c6f61198356aa858733bc4acf3cbe62e"
 
 [[package]]
+name = "phasedm"
+version = "0.1.0"
+dependencies = [
+ "atomic_float",
+ "lazy_static",
+ "ndarray 0.15.6",
+ "numpy",
+ "pyo3",
+ "rayon",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,18 +205,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31971752e70b8b2686d7e46ec17fb38dad4051d94024c88df49b667caea9c84"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "pydm"
-version = "0.1.0"
-dependencies = [
- "atomic_float",
- "lazy_static",
- "ndarray 0.15.6",
- "numpy",
- "pyo3",
- "rayon",
 ]
 
 [[package]]

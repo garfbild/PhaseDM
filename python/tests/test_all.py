@@ -1,5 +1,5 @@
 import pytest
-from pydm import pdm as rust_pdm
+from phasedm import pdm as rust_pdm
 from pdmpy import pdm as c_pdm
 import numpy as np
 import pandas as pd
@@ -26,14 +26,6 @@ pydm_times = []
 pdmpy_times = []
 power = []
 n_freqs = int(1e4)
-
-start = time.time()
-freq, theta = rust_pdm(t,y,min_freq,max_freq, n_freqs, n_bins, verbose=1)
-print(f"pydm computed in {time.time()-start}")
-
-plt.figure()
-plt.plot(freq,theta)
-plt.savefig('theta_rust.png')
 
 repeats = 5
 for i in tqdm(np.linspace(1,5,20)):
