@@ -11,8 +11,7 @@ PhaseDM is a high-performance implementation of the Phase Dispersion Minimisatio
 - **Future Development**: F-scoring and PDM2 implementations planned
 
 ## Technical Details
-
-PyDM leverages several technologies to achieve its performance and functionality:
+The main crates we use are
 - **Maturin**: Builds and publishes Rust-based Python packages
 - **PyO3**: Enables Rust to interact with Python code and objects
 - **NumPy**: Efficient numerical operations in Python
