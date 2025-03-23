@@ -72,7 +72,7 @@ pub fn check_time_array<'py>(py: Python<'py>, time: &Bound<'py, PyAny>) -> PyRes
         let float_array = np.call_method1("array", (time, float64_attr))?;
         let array_bound = float_array.downcast::<PyArray1<f64>>()?.readonly();
 
-        //This is actually super important as it reduces the phase calculation by a lot
+        //This is actually super important! small overhead from converting but speeds up the phase calculation by a lot
         let min_time = array_bound.get(0).unwrap();
         let array_vec: Vec<f64> = {
             let array_slice =array_bound.as_slice()?;

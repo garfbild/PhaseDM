@@ -65,3 +65,15 @@ plt.show()
 plt.savefig('theta_c.png')
 
 print(f"{pdmpy_time/pydm_time} x speed-up" )
+
+start = time.time()
+for i in range(10):
+    freq, theta = rust_pdm(t,y,min_freq,max_freq, n_freqs, n_bins, verbose=0)
+phasedm_time = time.time()-start
+print(f"phasedm average time {phasedm_time/10}")
+
+start = time.time()
+for i in range(10):
+    freq, theta = c_pdm(t, y, f_min = min_freq, f_max = max_freq, delf = freq_step, nbin = n_bins)
+phasedm_time = time.time()-start
+print(f"pydm average time {phasedm_time/10}")

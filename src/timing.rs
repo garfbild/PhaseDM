@@ -79,7 +79,7 @@ impl ThreadLocalTimer {
             
             let mut global = GLOBAL_COLLECTOR.lock().unwrap();
             
-            // Take the maximum duration for each section, not the sum
+            // Take the maximum duration for each section
             for (section, duration) in local_timers.iter() {      
                 global.entry(section.clone())
                     .and_modify(|existing| {
