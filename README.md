@@ -22,7 +22,7 @@ PyDM leverages several technologies to achieve its performance and functionality
 ## Installation
 
 ### Prerequisites
-- Python 3.7+
+- Python 3.8+
 - Rust compiler (automatically installed by many package managers)
 
 ### Option 1: Install from PyPI
