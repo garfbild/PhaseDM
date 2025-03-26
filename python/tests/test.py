@@ -4,25 +4,32 @@ import numpy as np
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+from phasedm import beta_test
 
 
 resolution = int(1e4)
 t = np.linspace(0, 20, resolution)
 
-y = np.sin(t)
+y = np.sin(t) + np.random.normal(0,1,resolution)
 # t = pd.date_range(
 #     start='2022-03-10 12:00:00',
 #     end='2022-03-10 12:00:20',
 #     periods=resolution
 # ).values
 
-min_freq = 0.1
+plt.plot(t,y)
+plt.savefig("signal.png")
+
+min_freq = 0.01
 max_freq = 1
 n_bins = 10
 n_freqs = int(1e4)
 
+sig_theta = beta_test(n_freqs,n_bins,0.01)
+print(sig_theta)
+
 start = time.time()
-freq, theta = rust_pdm(t,y,min_freq,max_freq, n_freqs, n_bins, verbose=1)
+freq, theta = rust_pdm(t,y,min_freq,max_freq,n_freqs,n_bins,verbose=1)
 pydm_time = time.time()-start
 print(f"pydm computed in {pydm_time}")
 
@@ -31,10 +38,14 @@ best_freq = freq[np.argmin(theta)]
 print(f"True period: {2*np.pi}, Detected period: {1/best_freq}")
 
 # Plot results
+
 plt.figure()
 plt.plot(freq,theta)
 plt.axvline(1/(2*np.pi), color='red', linestyle='--', label='True Frequency')
 plt.axvline(best_freq, color='green', linestyle=':', label='Detected Period')
+plt.axvline(best_freq/2, color='red', linestyle=':', label='Harmonic Period')
+
+plt.axhline(sig_theta, color='blue', linestyle='--', label='Significance Threshold')
 plt.xlabel('Frequency')
 plt.ylabel('PDM Statistic')
 plt.title('Phase Dispersion Minimisation Results')
@@ -68,7 +79,7 @@ print(f"{pdmpy_time/pydm_time} x speed-up" )
 
 start = time.time()
 for i in range(10):
-    freq, theta = rust_pdm(t,y,min_freq,max_freq, n_freqs, n_bins, verbose=0)
+    freq, theta = rust_pdm(t,y,min_freq,max_freq, n_freqs)
 phasedm_time = time.time()-start
 print(f"phasedm average time {phasedm_time/10}")
 

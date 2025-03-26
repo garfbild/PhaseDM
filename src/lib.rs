@@ -1,6 +1,8 @@
 use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 use numpy::{IntoPyArray, PyArray1,PyReadonlyArray1,};
 use rayon::prelude::*;
+use statrs::distribution::{Beta,ContinuousCDF};
 
 mod error;
 mod process;
@@ -11,6 +13,7 @@ pub mod timing;
 fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
     #[pyfn(m)]
     #[pyo3(name = "pdm")]
+    #[pyo3(signature = (time, signal, min_freq, max_freq, n_freqs, n_bins=None, verbose=None))]
     fn pdm<'py>(
         py: Python<'py>,
         time: &Bound<'py, PyAny>,
@@ -18,9 +21,13 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         min_freq: f64, //assumed units are in seconds
         max_freq: f64,
         n_freqs: u64,
-        n_bins: u64,
-        verbose: u64
+        n_bins: Option<u64>,
+        verbose: Option<u64>
     ) -> PyResult<(Bound<'py, PyArray1<f64>>,Bound<'py, PyArray1<f64>>)> {
+        let n_bins = n_bins.unwrap_or(10);
+        let verbose = verbose.unwrap_or(0);
+
+
         if verbose == 0{
             timing::enable_timing(false);
         } else {
@@ -46,6 +53,33 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         }
 
         Ok((freqs.into_pyarray(py),thetas.into_pyarray(py)))
+    }
+    #[pyfn(m)]
+    #[pyo3(name = "beta_test")]
+    #[pyo3(signature = (n_freqs,n_bins,p))]
+    fn beta_test(        
+        n_freqs: u64,
+        n_bins: u64,
+        p: f64) 
+    -> PyResult<f64> {
+        if p < 0.0 || p > 1.0 {
+            return Err(PyValueError::new_err(format!("Cannot find significance value for: {}", p)));
+        } 
+        if p == 0.0 {
+            return Ok(0.0);
+        } else if p == 1.0 {
+            return  Ok(1.0);
+        } else {
+            let d0 = {n_freqs-1} as f64; 
+            let d1 = {n_bins-1} as f64;
+            let d2 = {n_freqs-n_bins} as f64;
+            let n = Beta::new(d2/2.0, d1/2.0) 
+            .map_err(|e| PyValueError::new_err(format!("Failed to create Beta distribution: {}", e)))?;
+
+            let result = n.inverse_cdf(p*d2/d0);
+
+            Ok(result)
+        }
     }
     Ok(())
 }
