@@ -27,36 +27,38 @@ power = []
 n_freqs = int(1e4)
 
 repeats = 5
-for i in tqdm(np.linspace(1,5,20)):
+for i in tqdm(np.linspace(1, 5, 20)):
     power.append(i)
-    n_freqs = int(10**(i))
-    
-    freq_step   = (max_freq-min_freq)/n_freqs
+    n_freqs = int(10 ** (i))
+
+    freq_step = (max_freq - min_freq) / n_freqs
     pydm_run = 0.0
     pdmpy_run = 0.0
 
     for j in range(repeats):
         start = time.time()
-        freq, theta = rust_pdm(t,y,min_freq,max_freq,n_freqs, n_bins, verbose=0)
-        pydm_run += time.time()-start
+        freq, theta = rust_pdm(t, y, min_freq, max_freq, n_freqs, n_bins, verbose=0)
+        pydm_run += time.time() - start
 
         start = time.time()
-        freq, theta = c_pdm(t, y, f_min = min_freq, f_max = max_freq, delf = freq_step, nbin = n_bins)
-        pdmpy_run += time.time()-start
-        
-    pydm_times.append(pydm_run/repeats)
-    pdmpy_times.append(pdmpy_run/repeats)
+        freq, theta = c_pdm(
+            t, y, f_min=min_freq, f_max=max_freq, delf=freq_step, nbin=n_bins
+        )
+
+        pdmpy_run += time.time() - start
+
+    pydm_times.append(pydm_run / repeats)
+    pdmpy_times.append(pdmpy_run / repeats)
 
 
 plt.figure()
-plt.plot(power,pydm_times)
-plt.plot(power,pdmpy_times)
-plt.yscale('log')
+plt.plot(power, pydm_times)
+plt.plot(power, pdmpy_times)
+plt.yscale("log")
 
-plt.savefig('timer_comparison.png')
+plt.savefig("timer_comparison.png")
 
 # print(pydm_times)
-
 
 
 # freq_step = (max_freq-min_freq)/n_freqs

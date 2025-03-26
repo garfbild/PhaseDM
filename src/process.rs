@@ -38,7 +38,9 @@ fn compute_phase(time:ArrayView1<f64>, inv_freq: f64) -> Vec<f64>{
 
 fn binning_operation(phase:&Vec<f64>,inv_freq:f64,n_bins: u64) -> Vec<u64>{
     let s = n_bins as f64/inv_freq;
-    phase.iter().map(|&x| (x * s) as u64).collect()
+    // for some reason it is possible for x = ~inv_freq and so we get an index out of range error
+    // modulo shouldn't be neccassary
+    phase.par_iter().map(|&x| (x * s) as u64 % n_bins).collect()
 }
 
 fn bin_count_sum_operation(bin_counts: &mut Vec<u64>, bin_sums: &mut Vec<f64>, bin_index: &Vec<u64>, signal: &ArrayView1<f64>) -> (){
