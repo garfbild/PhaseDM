@@ -119,7 +119,7 @@ print(f"{pdmpy_time/pydm_time} x speed-up" )
 ```
 ## Comparison with Other Implementations
 
-| Feature | PyDM | pdm-py |
+| Feature | phasedm | pdm-py |
 |---------|------|--------|
 | Performance | Up to 10x faster | Baseline |
 | DateTime Support | ✅ | ❌ |
