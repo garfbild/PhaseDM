@@ -4,25 +4,15 @@ PhaseDM is a high-performance implementation of the Phase Dispersion Minimisatio
 
 ## Features
 
-- **High Performance**: Up to 10x faster than pure Python implementations through Rust parallelization with Rayon
+- **High Performance**: Up to 100x faster than pure Python implementations and 10x than single threaded c implementions through Rust parallelization with Rayon
 - **Better Compatibility**: No Visual Studio development tools required
 - **Enhanced DateTime Support**: Full support for `datetime[ns]` format (not available in pdm-py)
-- **Coverage Analysis**: Support for statistical coverage analysis (Coming Soon)
-- **Future Development**: F-scoring and PDM2 implementations planned
-
-## Technical Details
-The main crates we use are
-- **Maturin**: Builds and publishes Rust-based Python packages
-- **PyO3**: Enables Rust to interact with Python code and objects
-- **NumPy**: Efficient numerical operations in Python
-- **ndarray**: Rust library for n-dimensional arrays
-- **Rayon**: Provides data parallelism for Rust
+- **Beta Statistic**: Support for statistical analysis using Beta distribution
 
 ## Installation
 
 ### Prerequisites
 - Python 3.8+
-- Rust compiler (automatically installed by many package managers)
 
 ### Option 1: Install from PyPI
 ```bash
@@ -133,15 +123,25 @@ print(f"{pdmpy_time/pydm_time} x speed-up" )
 |---------|------|--------|
 | Performance | Up to 10x faster | Baseline |
 | DateTime Support | ✅ | ❌ |
-| Coverage Analysis | Coming Soon | ❌ |
+| Significance Testing | ✅  | ❌ |
 | Dependencies | No VS dev tools | Requires Visual Studio tools on Windows |
-| F-scoring | Planned | ❌ |
 | PDM2 | Planned | ❌ |
+
+## Technical Details
+The main crates we use are
+- **Maturin**: Builds and publishes Rust-based Python packages
+- **PyO3**: Enables Rust to interact with Python code and objects
+- **NumPy**: Efficient numerical operations in Python
+- **ndarray**: Rust library for n-dimensional arrays
+- **Rayon**: Provides data parallelism for Rust
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Reference
-Takes obvious inspiration from PY-PDM https://pypi.org/project/Py-PDM/ and Stellingwerfs orginal version https://www.stellingwerf.com/rfs-bin/index.cgi?action=PageView&id=34
+## References
+- Stellingwerf https://www.stellingwerf.com/rfs-bin/index.cgi?action=PageView&id=34
+- Schwarzenberg-Czerny https://iopscience.iop.org/article/10.1086/304832
+- PY-PDM https://pypi.org/project/Py-PDM/ 
+
 ## License
