@@ -11,6 +11,8 @@ resolution = int(1e4)
 t = np.linspace(0, 20, resolution)
 
 y = np.sin(t) + np.random.normal(0, 1, resolution)
+y = np.random.normal(0, 1, resolution)
+
 # t = pd.date_range(
 #     start='2022-03-10 12:00:00',
 #     end='2022-03-10 12:00:20',
@@ -26,7 +28,7 @@ max_freq = 1
 n_bins = 10
 n_freqs = int(1e4)
 
-sig_theta = beta_test(n_freqs, n_bins, 0.01)
+sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(sig_theta)
 
 start = time.time()

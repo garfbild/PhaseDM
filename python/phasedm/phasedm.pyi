@@ -1,10 +1,18 @@
 import numpy as np
 
-def pdm(time: np.ndarray, signal: np.ndarray, min_freq: float, max_freq: float, n_freqs: int, n_bins: int = 10, verbose: int = 0) -> tuple[np.ndarray, np.ndarray]:
+def pdm(
+    time: np.ndarray,
+    signal: np.ndarray,
+    min_freq: float,
+    max_freq: float,
+    n_freqs: int,
+    n_bins: int = 10,
+    verbose: int = 0,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Perform Phase Dispersion Minimisation (PDM) analysis on a time series signal.
 
-    This function computes the periodogram decomposition, which allows for spectral 
+    This function computes the periodogram decomposition, which allows for spectral
     analysis of the input signal across a specified frequency range.
 
     Parameters
@@ -44,7 +52,7 @@ def pdm(time: np.ndarray, signal: np.ndarray, min_freq: float, max_freq: float, 
     -------
     (numpy.ndarray, numpy.ndarray)
         Resulting periodogram decomposition array.
-        The shape and specific content depend on the input parameters and 
+        The shape and specific content depend on the input parameters and
         internal implementation of the PDM algorithm.
 
     Raises
@@ -71,5 +79,5 @@ def pdm(time: np.ndarray, signal: np.ndarray, min_freq: float, max_freq: float, 
     >>> theta,freqs = pdm(time, signal, min_freq=1, max_freq=10, n_freqs=100, n_bins=20)
     """
 
-def beta_test(n_freqs: int, n_bins: int, p: float) -> float:
+def beta_test(n: int, n_bins: int, p: float) -> float:
     "stuff"

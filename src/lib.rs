@@ -56,9 +56,9 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
     }
     #[pyfn(m)]
     #[pyo3(name = "beta_test")]
-    #[pyo3(signature = (n_freqs,n_bins,p))]
+    #[pyo3(signature = (n,n_bins,p))]
     fn beta_test(        
-        n_freqs: u64,
+        n: u64,
         n_bins: u64,
         p: f64) 
     -> PyResult<f64> {
@@ -70,9 +70,9 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         } else if p == 1.0 {
             return  Ok(1.0);
         } else {
-            let d0 = {n_freqs-1} as f64; 
+            let d0 = {n-1} as f64; 
             let d1 = {n_bins-1} as f64;
-            let d2 = {n_freqs-n_bins} as f64;
+            let d2 = {n-n_bins} as f64;
             let n = Beta::new(d2/2.0, d1/2.0) 
             .map_err(|e| PyValueError::new_err(format!("Failed to create Beta distribution: {}", e)))?;
 
@@ -81,5 +81,6 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
             Ok(result)
         }
     }
+    
     Ok(())
 }
