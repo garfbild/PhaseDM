@@ -31,6 +31,11 @@ n_freqs = int(1e4)
 sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(sig_theta)
 
+t = np.arange(0, resolution)
+
+freq, theta = rust_pdm(t, y, 1 / (2 * np.pi), 1 / (2 * np.pi), 1, n_bins, verbose=1)
+
+
 start = time.time()
 freq, theta = rust_pdm(t, y, min_freq, max_freq, n_freqs, n_bins, verbose=1)
 pydm_time = time.time() - start

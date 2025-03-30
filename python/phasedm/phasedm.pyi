@@ -50,16 +50,20 @@ def pdm(
 
     Returns
     -------
-    (numpy.ndarray, numpy.ndarray)
-        Resulting periodogram decomposition array.
-        The shape and specific content depend on the input parameters and
-        internal implementation of the PDM algorithm.
+    tuple[np.ndarray, np.ndarray]
+        A tuple containing:
+        - freqs: np.ndarray - Frequency values (first element) corresponding to the computed theta statistics
+        - theta: np.ndarray - PDM statistic values (second element), where lower values indicate stronger periodicity
 
     Raises
     ------
-    ValueError
+    TypeError
         If input parameters do not meet the specified constraints:
         - time or signal are not 1D numpy arrays
+        - time must be an array of floats or datetime64
+
+    ValueError
+        If input parameters do not meet the specified constraints:
         - min_freq is not positive
         - max_freq is less than min_freq
         - n_freqs is not positive
@@ -80,4 +84,56 @@ def pdm(
     """
 
 def beta_test(n: int, n_bins: int, p: float) -> float:
-    "stuff"
+    """
+    Calculate a significance theta value for a given p-value using the inverse incomplete beta function.
+
+    This function computes the critical theta value corresponding to a specified probability level
+    in Phase Dispersion Minimisation (PDM) analysis. It uses the inverse incomplete beta function
+    to determine the threshold at which a periodogram peak can be considered statistically significant.
+
+    Parameters
+    ----------
+    n : int
+        Number of data points in the time series.
+        Must be a positive integer (> 0).
+
+    n_bins : int
+        Number of phase bins used in the PDM analysis.
+        Must be a positive integer (> 0).
+
+    p : float
+        Target probability value (p-value).
+        Must be in the range (0, 1).
+        Typically represents the desired significance level (e.g., 0.01 for 99% confidence).
+
+    Returns
+    -------
+    float
+        The critical theta value corresponding to the specified p-value.
+        Values below this threshold in a PDM periodogram are considered statistically significant
+        at the specified probability level.
+
+    Raises
+    ------
+    ValueError
+        If input parameters do not meet the specified constraints:
+        - n is not a positive integer
+        - n_bins is not a positive integer
+        - p is not in the range (0, 1)
+
+    Notes
+    -----
+    - The inverse incomplete beta function is used to determine the critical value
+    - The degrees of freedom for the beta function are derived from n and n_bins
+    - Lower theta values indicate stronger periodic signals
+
+    Examples
+    --------
+    >>> critical_theta = beta_test(1000, 20, 0.01)
+    >>> print(f"Threshold value at 99% confidence: {critical_theta:.4f}")
+    Threshold value at 99% confidence: 0.8752
+
+    >>> # Use with PDM analysis
+    >>> theta, freqs = pdm(time, signal, min_freq=1, max_freq=10, n_freqs=100, n_bins=20)
+    >>> significant_freqs = freqs[theta < beta_test(len(time), 20, 0.01)]
+    """
