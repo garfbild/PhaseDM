@@ -16,6 +16,7 @@ PhaseDM is a high-performance implementation of the Phase Dispersion Minimisatio
 - Python 3.8+
 
 ### Option 1: Install from PyPI
+
 ```bash
 pip install phasedm
 ```
@@ -84,7 +85,7 @@ sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(f"Significant theta {sig_theta}")
 
 start = time.time()
-freq, theta = rust_pdm(
+freq, theta = pdm(
     t, y, min_freq, max_freq, n_freqs, sigma=sigma, n_bins=n_bins, verbose=1
 )
 pydm_time = time.time() - start
