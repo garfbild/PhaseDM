@@ -20,9 +20,7 @@ sigma = np.zeros(resolution)
 #     periods=resolution
 # ).values
 
-
 plt.plot(t, y)
-plt.savefig("signal.png")
 
 min_freq = 0.05
 max_freq = 1
@@ -32,22 +30,10 @@ n_freqs = int(1e4)
 sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(sig_theta)
 
-# t = np.arange(0, resolution)
-
-freq, theta = rust_pdm(
-    time=t,
-    signal=y,
-    sigma=sigma,
-    min_freq=1 / (2 * np.pi),
-    max_freq=1 / (2 * np.pi),
-    n_freqs=1,
-    n_bins=n_bins,
-    verbose=1,
-)
-
-
 start = time.time()
-freq, theta = rust_pdm(t, y, None, min_freq, max_freq, n_freqs, n_bins, verbose=1)
+freq, theta = rust_pdm(
+    t, y, min_freq, max_freq, n_freqs, sigma=sigma, n_bins=n_bins, verbose=1
+)
 pydm_time = time.time() - start
 print(f"pydm computed in {pydm_time}")
 
@@ -69,11 +55,10 @@ plt.ylabel("PDM Statistic")
 plt.title("Phase Dispersion Minimisation Results")
 plt.legend()
 plt.show()
-plt.savefig("theta_rust.png")
 
 freq_step = (max_freq - min_freq) / n_freqs
 start = time.time()
-freq, theta = c_pdm(t, y, min_freq, max_freq, freq_step, n_bins)
+freq, theta = c_pdm(t, y, sigma, min_freq, max_freq, freq_step, n_bins)
 pdmpy_time = time.time() - start
 print(f"py-pdm computed in {pdmpy_time}")
 
@@ -91,20 +76,5 @@ plt.ylabel("PDM Statistic")
 plt.title("Phase Dispersion Minimisation Results")
 plt.legend()
 plt.show()
-plt.savefig("theta_c.png")
 
 print(f"{pdmpy_time/pydm_time} x speed-up")
-
-start = time.time()
-for i in range(10):
-    freq, theta = rust_pdm(t, y, min_freq, max_freq, n_freqs)
-phasedm_time = time.time() - start
-print(f"phasedm average time {phasedm_time/10}")
-
-start = time.time()
-for i in range(10):
-    freq, theta = c_pdm(
-        t, y, f_min=min_freq, f_max=max_freq, delf=freq_step, nbin=n_bins
-    )
-phasedm_time = time.time() - start
-print(f"pydm average time {phasedm_time/10}")
