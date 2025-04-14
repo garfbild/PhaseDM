@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional, Tuple
 
 def pdm(
     time: np.ndarray,
@@ -6,9 +7,10 @@ def pdm(
     min_freq: float,
     max_freq: float,
     n_freqs: int,
+    sigma: Optional[np.ndarray] = None,  # None by default
     n_bins: int = 10,
     verbose: int = 0,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Perform Phase Dispersion Minimisation (PDM) analysis on a time series signal.
 
@@ -37,6 +39,11 @@ def pdm(
     n_freqs : int
         Number of frequency points to compute in the analysis.
         Must be a positive integer (> 0).
+
+    sigma: Optional np.ndarray
+        Array of measurement uncertainty corresponding to the signal.
+        Must be a 1D numpy array of numeric values.
+        Cannot contain non-numeric values.
 
     n_bins : int, optional
         Number of bins to use in the analysis.

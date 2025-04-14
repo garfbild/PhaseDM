@@ -13,6 +13,8 @@ t = np.linspace(0, 20, resolution)
 y = np.sin(t) + np.random.normal(0, 1, resolution)
 y = np.random.normal(0, 1, resolution)
 
+sigma = np.zeros(resolution)
+
 # t = pd.date_range(
 #     start='2022-03-10 12:00:00',
 #     end='2022-03-10 12:00:20',
@@ -31,13 +33,22 @@ n_freqs = int(1e4)
 sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(sig_theta)
 
-t = np.arange(0, resolution)
+# t = np.arange(0, resolution)
 
-freq, theta = rust_pdm(t, y, 1 / (2 * np.pi), 1 / (2 * np.pi), 1, n_bins, verbose=1)
+freq, theta = rust_pdm(
+    time=t,
+    signal=y,
+    sigma=sigma,
+    min_freq=1 / (2 * np.pi),
+    max_freq=1 / (2 * np.pi),
+    n_freqs=1,
+    n_bins=n_bins,
+    verbose=1,
+)
 
 
 start = time.time()
-freq, theta = rust_pdm(t, y, min_freq, max_freq, n_freqs, n_bins, verbose=1)
+freq, theta = rust_pdm(t, y, None, min_freq, max_freq, n_freqs, n_bins, verbose=1)
 pydm_time = time.time() - start
 print(f"pydm computed in {pydm_time}")
 
@@ -63,7 +74,7 @@ plt.savefig("theta_rust.png")
 
 freq_step = (max_freq - min_freq) / n_freqs
 start = time.time()
-freq, theta = c_pdm(t, y, f_min=min_freq, f_max=max_freq, delf=freq_step, nbin=n_bins)
+freq, theta = c_pdm(t, y, min_freq, max_freq, freq_step, n_bins)
 pdmpy_time = time.time() - start
 print(f"py-pdm computed in {pdmpy_time}")
 
