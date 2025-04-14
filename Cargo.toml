@@ -1,6 +1,6 @@
 [package]
 name = "phasedm"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -16,3 +16,4 @@ rayon = "1.8"
 lazy_static = "1.4.0"
 atomic_float = "0.1"
 approx = "0.5.1"
+statrs="0.18.0"
