@@ -1,6 +1,6 @@
 # PhaseDM: Phase Dispersion Minimisation for Python
 
-PhaseDM is a high-performance implementation of the Phase Dispersion Minimisation algorithm for Python, built with Rust. This package offers significant advantages over existing implementations like pdm-py, making it an ideal choice for astronomical time series analysis.
+PhaseDM is a high-performance implementation of the Phase Dispersion Minimisation algorithm for Python, built with Rust. This package offers significant advantages over existing implementations like pdm-py, making it an ideal choice for time series analysis.
 
 ## Features
 
