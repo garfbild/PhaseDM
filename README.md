@@ -4,12 +4,13 @@ PhaseDM is a high-performance implementation of the Phase Dispersion Minimisatio
 
 ## Features
 
-- **High Performance**: Up to 100x faster than pure Python implementations and 10x than single threaded c implementions through Rust parallelization with Rayon
+- **High Performance**: Up to 100x faster than pure Python implementations and 10x than single threaded c implementions through parallelization with Rayon
 - **Better Compatibility**: No Visual Studio development tools required
 - **Enhanced DateTime Support**: Full support for `datetime[ns]` format (not available in pdm-py)
 - **Beta Statistic**: Support for statistical analysis using Beta distribution
-
-## Installation
+<p align="center">
+<img src="Timer_comparison.png" width="720" alt="Alt text">
+</p>
 
 ### Prerequisites
 - Python 3.8+
