@@ -2,6 +2,7 @@
 
 PhaseDM is a high-performance implementation of the Phase Dispersion Minimisation algorithm for Python, built with Rust. This package offers significant advantages over existing implementations like pdm-py, making it an ideal choice for time series analysis.
 
+Check out the [example notebook](examples/asteroid_pdm.ipynb) to see how to calculate the angular velocity of 10-Hygiea, a large asteroid located in the main asteroid belt between Mars and Jupiter.
 ## Features
 
 - **High Performance**: Up to 100x faster than pure Python implementations and 10x than single threaded c implementions through parallelization with Rayon
