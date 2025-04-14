@@ -82,16 +82,13 @@ fn squared_diff_sigma_calculation(
 ) {
     for (i, &bin) in bin_index.iter().enumerate() {
         let bin_diff = bin_means[bin as usize] - signal[i];
-        // if bin_diff >= sigma[i].abs() {
-        //     bin_squared_difference[bin as usize] += f64::powi(bin_diff, 2);
-        // }
+        if bin_diff >= sigma[i].abs() {
+            bin_squared_difference[bin as usize] += f64::powi(bin_diff, 2);
+        }
         let diff = mean - signal[i];
-        // if diff >= sigma[i] {
-        //     *squared_difference += f64::powi(diff, 2);
-        // }
-        let weight = 1.0 / f64::powi(sigma[i], 2);
-        bin_squared_difference[bin as usize] += f64::powi(bin_diff, 2) * weight;
-        *squared_difference += f64::powi(diff, 2) * weight;
+        if diff >= sigma[i] {
+            *squared_difference += f64::powi(diff, 2);
+        }
     }
 }
 

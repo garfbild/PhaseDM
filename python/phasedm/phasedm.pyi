@@ -40,7 +40,7 @@ def pdm(
         Number of frequency points to compute in the analysis.
         Must be a positive integer (> 0).
 
-    sigma: Optional np.ndarray
+    sigma: np.ndarray, optional
         Array of measurement uncertainty corresponding to the signal.
         Must be a 1D numpy array of numeric values.
         Cannot contain non-numeric values.

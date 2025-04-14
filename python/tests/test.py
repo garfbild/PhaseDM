@@ -11,7 +11,6 @@ resolution = int(1e4)
 t = np.linspace(0, 20, resolution)
 
 y = np.sin(t) + np.random.normal(0, 1, resolution)
-y = np.random.normal(0, 1, resolution)
 
 sigma = np.zeros(resolution)
 
