@@ -55,6 +55,7 @@ plt.ylabel("PDM Statistic")
 plt.title("Phase Dispersion Minimisation Results")
 plt.legend()
 plt.show()
+plt.savefig("fig")
 
 freq_step = (max_freq - min_freq) / n_freqs
 start = time.time()

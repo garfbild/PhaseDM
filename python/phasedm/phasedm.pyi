@@ -1,6 +1,9 @@
 import numpy as np
 from typing import Optional, Tuple
 
+def testfn(time, signal):
+    """DOCSTRING"""
+
 def pdm(
     time: np.ndarray,
     signal: np.ndarray,
