@@ -1,7 +1,5 @@
-use numpy::ndarray::ArrayView1;
-use numpy::PyArrayMethods;
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
-use pyo3::exceptions::{PyTypeError, PyValueError};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use statrs::distribution::{Beta, ContinuousCDF};
@@ -13,54 +11,6 @@ pub mod timing;
 /// A Python module implemented in Rust.
 #[pymodule]
 fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    #[pyfn(m)]
-    #[pyo3(name = "testfn")]
-    #[pyo3(signature = (time, signal))]
-    fn testfn<'py>(
-        py: Python<'py>,
-        time: &Bound<'py, PyAny>,
-        signal: &Bound<'py, PyAny>,
-    ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-        let astropy_time = py.import("astropy.time")?.getattr("Time")?;
-        let astropy_quantity = py.import("astropy.units")?.getattr("Quantity")?;
-        let np = py.import("numpy")?;
-        let float64_attr = np.getattr("float64")?;
-
-        if signal.is_instance(&astropy_quantity)? == true {
-            println!("true");
-            let value = signal.getattr("value")?;
-            let float_array = np.call_method1("array", (value, float64_attr))?;
-
-            let array_bound = float_array.downcast::<PyArray1<f64>>()?.to_owned();
-            return Ok(array_bound);
-        } else {
-            println!("false");
-            return Err(PyTypeError::new_err("eek"));
-        }
-
-        // if time.is_instance(&astropy_time)? == true {
-        //     let np = py.import("numpy")?;
-
-        //     //We can convert the Time object to a datetime representation which is the most consistent
-        //     let float64_attr = np.getattr("float64")?;
-        //     let datetime64 = time.getattr("datetime64")?;
-
-        //     let float_array = np.call_method1("array", (datetime64, float64_attr))?;
-        //     let array_bound = float_array.downcast::<PyArray1<f64>>()?.readonly();
-
-        //     //This is actually super important! small overhead from converting but speeds up the phase calculation by a lot
-        //     let min_time = array_bound.get(0).unwrap();
-        //     let array_vec: Vec<f64> = {
-        //         let array_slice = array_bound.as_slice()?;
-        //         array_slice.iter().map(|&x| (x - min_time) / 1e9).collect()
-        //     };
-
-        //     return Ok(array_vec.into_pyarray(py));
-        // } else {
-        //     return Err(PyTypeError::new_err("must be astropy time"));
-        // }
-    }
-
     #[pyfn(m)]
     #[pyo3(name = "pdm")]
     #[pyo3(signature = (time, signal, min_freq, max_freq, n_freqs, sigma=None, n_bins=None, verbose=None))]

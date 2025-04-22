@@ -87,7 +87,6 @@ pub fn check_time_array<'py>(
     let astropy_time = py.import("astropy.time")?.getattr("Time")?;
 
     if time.is_instance(&astropy_time)? {
-        let np = py.import("numpy")?;
         let float64_attr = np.getattr("float64")?;
 
         //We can convert the Time object to a datetime representation which is the most consistent
