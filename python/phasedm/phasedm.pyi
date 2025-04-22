@@ -1,16 +1,15 @@
 import numpy as np
-from typing import Optional, Tuple
-
-def testfn(time, signal):
-    """DOCSTRING"""
+from typing import Optional, Tuple, Union
+from astropy.time import Time
+from astropy.units import Quantity
 
 def pdm(
-    time: np.ndarray,
-    signal: np.ndarray,
+    time: Union[np.ndarray, Time],
+    signal: Union[np.ndarray, Quantity],
     min_freq: float,
     max_freq: float,
     n_freqs: int,
-    sigma: Optional[np.ndarray] = None,  # None by default
+    sigma: Optional[Union[np.ndarray, Quantity]] = None,  # None by default
     n_bins: int = 10,
     verbose: int = 0,
 ) -> Tuple[np.ndarray, np.ndarray]:
@@ -22,14 +21,15 @@ def pdm(
 
     Parameters
     ----------
-    time : numpy.ndarray
+    time : numpy.ndarray or astropy.time.Time
         Array of time points corresponding to the signal.
-        Must be a 1D numpy array of numeric or be a datetime64[ns] values.
+        Can be a 1D numpy array of numeric or datetime64[ns] values, or an astropy Time object.
         Cannot contain non-numeric values.
 
-    signal : numpy.ndarray
+    signal : numpy.ndarray or astropy.units.Quantity
         Input signal to be analyzed.
-        Must be a 1D numpy array of float values representing the signal amplitudes.
+        Can be a 1D numpy array of float values representing the signal amplitudes,
+        or an astropy Quantity object with appropriate units.
 
     min_freq : float
         Minimum frequency for analysis.
@@ -43,9 +43,9 @@ def pdm(
         Number of frequency points to compute in the analysis.
         Must be a positive integer (> 0).
 
-    sigma: np.ndarray, optional
+    sigma: numpy.ndarray or astropy.units.Quantity, optional
         Array of measurement uncertainty corresponding to the signal.
-        Must be a 1D numpy array of numeric values.
+        Can be a 1D numpy array of numeric values or an astropy Quantity object.
         Cannot contain non-numeric values.
 
     n_bins : int, optional
@@ -69,8 +69,8 @@ def pdm(
     ------
     TypeError
         If input parameters do not meet the specified constraints:
-        - time or signal are not 1D numpy arrays
-        - time must be an array of floats or datetime64
+        - time or signal are not 1D numpy arrays or appropriate astropy objects
+        - time must be an array of floats, datetime64, or astropy Time object
 
     ValueError
         If input parameters do not meet the specified constraints:
@@ -84,6 +84,7 @@ def pdm(
     - Ensure input arrays have matching lengths
     - The function does not require uniform time sampling
     - Computational complexity increases with n_freqs and n_bins
+    - When using astropy objects, appropriate unit conversion is handled automatically
 
     Examples
     --------
@@ -91,6 +92,14 @@ def pdm(
     >>> time = np.linspace(0, 10, 1000)
     >>> signal = np.sin(2 * np.pi * 2 * time) + np.random.normal(0, 0.1, time.shape)
     >>> theta,freqs = pdm(time, signal, min_freq=1, max_freq=10, n_freqs=100, n_bins=20)
+
+    >>> # Using astropy objects
+    >>> from astropy.time import Time
+    >>> from astropy import units as u
+    >>> time_astropy = Time(time, format='jd')
+    >>> signal_astropy = signal * u.mag
+    >>> sigma_astropy = np.random.normal(0, 0.05, time.shape) * u.mag
+    >>> theta, freqs = pdm(time_astropy, signal_astropy, min_freq=1, max_freq=10, n_freqs=100, sigma=sigma_astropy)
     """
 
 def beta_test(n: int, n_bins: int, p: float) -> float:

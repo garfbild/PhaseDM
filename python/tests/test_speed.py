@@ -74,4 +74,3 @@ plt.grid(True, which="both", ls="--", alpha=0.3)
 plt.tight_layout()
 
 plt.savefig("Timer_comparison.png", dpi=300)
-plt.show()  # Add this if you want to display the plot in addition to saving it

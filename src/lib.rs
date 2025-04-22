@@ -1,4 +1,4 @@
-use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
+use numpy::{IntoPyArray, PyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -21,7 +21,7 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         min_freq: f64, //assumed units are in seconds
         max_freq: f64,
         n_freqs: u64,
-        sigma: Option<PyReadonlyArray1<'py, f64>>,
+        sigma: Option<&Bound<'py, PyAny>>,
         n_bins: Option<u64>,
         verbose: Option<u64>,
     ) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
@@ -33,8 +33,18 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         } else {
             timing::enable_timing(true);
         }
+
         let time = time_section!("time check", error::check_time_array(py, time)?);
         let signal = time_section!("signal check", error::check_signal_array(py, signal)?);
+
+        // if sigma is Some we check
+        let sigma = time_section!("signal check", {
+            if let Some(sigma) = sigma {
+                Some(error::check_sigma_array(py, sigma)?)
+            } else {
+                None
+            }
+        });
 
         let time = time.as_array();
         let signal = signal.as_array();
