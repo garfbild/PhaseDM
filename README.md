@@ -113,6 +113,9 @@ plt.title("Phase Dispersion Minimisation Results")
 plt.legend()
 plt.show()
 ```
+<p align="center">
+<img src="Theta.png" width="720" alt="Alt text">
+</p>
 ## Comparison with Other Implementations
 
 | Feature | phasedm | pdm-py |
