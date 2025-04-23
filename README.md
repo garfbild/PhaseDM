@@ -6,8 +6,8 @@ Check out the [example notebook](examples/asteroid_pdm.ipynb) to see how to calc
 ## Features
 
 - **High Performance**: Up to 100x faster than pure Python implementations and 10x than single threaded c implementions through parallelization with Rayon
-- **Better Compatibility**: No Visual Studio development tools required
-- **Enhanced DateTime Support**: Full support for `datetime[ns]` format (not available in pdm-py)
+- **Better Platform Compatibility**: No Visual Studio development tools required
+- **Enhanced Data Type Support**: Full support for Numpy `datetime[ns]` format and Astropy's Time and Quantity data (not available in pdm-py)
 - **Beta Statistic**: Support for statistical analysis using Beta distribution
 <p align="center">
 <img src="Timer_comparison.png" width="720" alt="Alt text">
@@ -15,6 +15,8 @@ Check out the [example notebook](examples/asteroid_pdm.ipynb) to see how to calc
 
 ### Prerequisites
 - Python 3.8+
+- Numpy 1.22.0+
+- Astropy 7.0.0+
 
 ### Option 1: Install from PyPI
 
@@ -42,7 +44,7 @@ source .venv/bin/activate
 
 #### Step 4: Install dependencies
 ```bash
-uv pip install maturin numpy matplotlib
+uv pip install maturin numpy astropy matplotlib 
 ```
 
 #### Step 5: Build and install the package
@@ -117,6 +119,7 @@ plt.show()
 |---------|------|--------|
 | Performance | Up to 10x faster | Baseline |
 | DateTime Support | ✅ | ❌ |
+| Astropy Support | ✅ | ❌ |
 | Significance Testing | ✅  | ❌ |
 | Dependencies | No VS dev tools | Requires Visual Studio tools on Windows |
 | PDM2 | Planned | ❌ |
