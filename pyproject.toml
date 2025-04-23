@@ -1,11 +1,11 @@
 [build-system]
 requires = ["maturin>=1.8,<2.0",
-    "numpy>=1.22.0"]
+    "numpy>=1.22.0", "astropy>=7.0.0"]
 build-backend = "maturin"
 
 [project]
 name = "phasedm"
-requires-python = ">=3.8, <3.13"
+requires-python = ">=3.8, <=3.13"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -14,6 +14,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+
 ]
 dynamic = ["version"]
 [project.optional-dependencies]
