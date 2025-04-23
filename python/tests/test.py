@@ -25,7 +25,7 @@ plt.plot(t, y)
 min_freq = 0.05
 max_freq = 1
 n_bins = 10
-n_freqs = int(1e4)
+n_freqs = int(1e5)
 
 sig_theta = beta_test(resolution, n_bins, 0.0001)
 print(sig_theta)
@@ -55,6 +55,7 @@ plt.ylabel("PDM Statistic")
 plt.title("Phase Dispersion Minimisation Results")
 plt.legend()
 plt.show()
+plt.savefig("fig")
 
 freq_step = (max_freq - min_freq) / n_freqs
 start = time.time()
