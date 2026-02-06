@@ -40,7 +40,7 @@ fn compute_phase(time: ArrayView1<f64>, inv_freq: f64) -> Vec<f64> {
 fn binning_operation(phase: &Vec<f64>, inv_freq: f64, n_bins: u64) -> Vec<u64> {
     let s = n_bins as f64 / inv_freq;
     // for some reason it is possible for x = ~inv_freq and so we get an index out of range error
-    // modulo shouldn't be neccassary
+    // modulo shouldn't be necassary
     phase.par_iter().map(|&x| (x * s) as u64 % n_bins).collect()
 }
 
@@ -82,11 +82,11 @@ fn squared_diff_sigma_calculation(
 ) {
     for (i, &bin) in bin_index.iter().enumerate() {
         let bin_diff = bin_means[bin as usize] - signal[i];
-        if bin_diff >= sigma[i].abs() {
+        if bin_diff.abs() >= sigma[i].abs() {
             bin_squared_difference[bin as usize] += f64::powi(bin_diff, 2);
         }
         let diff = mean - signal[i];
-        if diff >= sigma[i] {
+        if diff.abs() >= sigma[i].abs() {
             *squared_difference += f64::powi(diff, 2);
         }
     }
@@ -160,6 +160,12 @@ pub fn compute_theta(
         );
     });
 
+    if squared_difference == 0.0 {
+        return Err(PyValueError::new_err(
+            "total squared difference is zero (all signal values are identical), cannot compute theta",
+        ));
+    }
+
     Ok(bin_squared_difference.iter().sum::<f64>() / squared_difference)
 }
 
@@ -187,6 +193,12 @@ pub fn compute_theta_sigma(
             &sigma,
         );
     });
+
+    if squared_difference == 0.0 {
+        return Err(PyValueError::new_err(
+            "total squared difference is zero (all deviations within sigma), cannot compute theta",
+        ));
+    }
 
     Ok(bin_squared_difference.iter().sum::<f64>() / squared_difference)
 }
@@ -308,13 +320,14 @@ mod tests {
             &sigma.view(),
         );
 
-        // Bin 0: (3-1)² + (3-2)² = 4 + 1 = 5
+        // Bin 0: |3-1|=2>=1 → (3-1)²=4, |3-2|=1>=1 → (3-2)²=1 → 5.0
         assert_relative_eq!(bin_squared_difference[0], 5.0);
 
-        // Bin 1: 0 * (5-4.5)² + 0 * (5-5.5)² = 0 + 0 = 0
+        // Bin 1: |5-4.5|=0.5<1 → skip, |5-5.5|=0.5<1 → skip → 0.0
         assert_relative_eq!(bin_squared_difference[1], 0.0);
 
-        // Total: (4-1)² + (4-2)² + 0 * (4-4.5)² + (4-5.5)² = 9 + 4 = 13
-        assert_relative_eq!(squared_difference, 13.0);
+        // Total: |4-1|=3>=1 → 9, |4-2|=2>=1 → 4, |4-4.5|=0.5<1 → skip, |4-5.5|=1.5>=1 → 2.25
+        // = 9 + 4 + 2.25 = 15.25
+        assert_relative_eq!(squared_difference, 15.25);
     }
 }

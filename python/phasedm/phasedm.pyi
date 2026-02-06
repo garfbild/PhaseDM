@@ -91,7 +91,7 @@ def pdm(
     >>> import numpy as np
     >>> time = np.linspace(0, 10, 1000)
     >>> signal = np.sin(2 * np.pi * 2 * time) + np.random.normal(0, 0.1, time.shape)
-    >>> theta,freqs = pdm(time, signal, min_freq=1, max_freq=10, n_freqs=100, n_bins=20)
+    >>> freqs, theta = pdm(time, signal, min_freq=1, max_freq=10, n_freqs=100, n_bins=20)
 
     >>> # Using astropy objects
     >>> from astropy.time import Time

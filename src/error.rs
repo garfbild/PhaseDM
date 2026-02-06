@@ -30,6 +30,19 @@ pub fn check_matching_length(
     Ok(())
 }
 
+pub fn check_n_bins(n_bins: u64, n: usize) -> PyResult<()> {
+    if n_bins == 0 {
+        return Err(PyValueError::new_err("n_bins must be greater than 0"));
+    }
+    if n_bins as usize >= n {
+        return Err(PyValueError::new_err(format!(
+            "n_bins ({}) must be less than the number of data points ({})",
+            n_bins, n
+        )));
+    }
+    Ok(())
+}
+
 pub fn check_min_less_max(min_freq: f64, max_freq: f64, n_freqs: u64) -> PyResult<()> {
     if min_freq > max_freq {
         return Err(PyValueError::new_err(format!(
@@ -40,9 +53,9 @@ pub fn check_min_less_max(min_freq: f64, max_freq: f64, n_freqs: u64) -> PyResul
         return Err(PyValueError::new_err(format!(
             "frequency value mismatch: if you wish to test a single frequency then min_freq = max_freq and n=1"
         )));
-    } else if min_freq < 0_f64 || max_freq < 0_f64 {
+    } else if min_freq <= 0_f64 || max_freq <= 0_f64 {
         return Err(PyValueError::new_err(format!(
-            "frequency value issue: cannot interpret a negative frequncy {} or {}",
+            "frequency value issue: frequency must be positive, got min_freq={}, max_freq={}",
             min_freq, max_freq
         )));
     } else {
