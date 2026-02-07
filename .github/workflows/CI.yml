@@ -110,10 +110,12 @@ jobs:
     strategy:
       matrix:
         platform:
-          - runner: macos-13
-            target: x86_64
           - runner: macos-14
             target: aarch64
+          - runner: macos-15
+            target: aarch64
+          - runner: macos-15-intel
+            target: x86_64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -128,7 +130,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-macos-${{ matrix.platform.target }}
+          name: wheels-macos-${{ matrix.platform.runner }}-${{ matrix.platform.target }}
           path: dist
 
   sdist:
