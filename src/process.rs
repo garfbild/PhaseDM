@@ -209,52 +209,127 @@ mod tests {
     use approx::assert_relative_eq;
     use ndarray::Array1;
 
+    // ===== generate_freqs tests =====
+
     #[test]
     fn test_generate_freqs() {
-        // Test with 5 frequencies from 10 to 20
         let freqs = generate_freqs(10.0, 20.0, 5);
         assert_eq!(freqs.len(), 5);
         assert_relative_eq!(freqs[0], 10.0);
         assert_relative_eq!(freqs[4], 20.0);
         assert_relative_eq!(freqs[2], 15.0);
 
-        // Test edge case: single frequency
         let single_freq = generate_freqs(10.0, 20.0, 1);
         assert_eq!(single_freq.len(), 1);
         assert_relative_eq!(single_freq[0], 10.0);
     }
+
+    #[test]
+    fn test_generate_freqs_zero_n() {
+        let freqs = generate_freqs(5.0, 10.0, 0);
+        assert_eq!(freqs.len(), 1);
+        assert_relative_eq!(freqs[0], 5.0);
+    }
+
+    #[test]
+    fn test_generate_freqs_same_bounds() {
+        let freqs = generate_freqs(7.0, 7.0, 1);
+        assert_eq!(freqs.len(), 1);
+        assert_relative_eq!(freqs[0], 7.0);
+    }
+
+    #[test]
+    fn test_generate_freqs_two() {
+        let freqs = generate_freqs(1.0, 5.0, 2);
+        assert_eq!(freqs.len(), 2);
+        assert_relative_eq!(freqs[0], 1.0);
+        assert_relative_eq!(freqs[1], 5.0);
+    }
+
+    #[test]
+    fn test_generate_freqs_spacing() {
+        let freqs = generate_freqs(0.0, 10.0, 11);
+        assert_eq!(freqs.len(), 11);
+        for i in 1..freqs.len() {
+            let spacing = freqs[i] - freqs[i - 1];
+            assert_relative_eq!(spacing, 1.0, epsilon = 1e-10);
+        }
+    }
+
+    // ===== compute_phase tests =====
+
     #[test]
     fn test_compute_phase() {
-        // Simple test with known values
-        let time = Array1::from_vec(vec![0.0_f64, 1.0_f64, 2.0_f64, 3.0_f64, 4.0_f64]);
-        let time_view: ArrayView1<f64> = time.view();
-        let inv_freq = 3.0;
-        let phases = compute_phase(time_view, inv_freq);
+        let time = Array1::from_vec(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
+        let phases = compute_phase(time.view(), 3.0);
 
         assert_eq!(phases.len(), 5);
         assert_relative_eq!(phases[0], 0.0);
         assert_relative_eq!(phases[1], 1.0);
         assert_relative_eq!(phases[2], 2.0);
-        assert_relative_eq!(phases[3], 0.0); // 3.0 % 3.0 = 0.0
-        assert_relative_eq!(phases[4], 1.0); // 4.0 % 3.0 = 1.0
+        assert_relative_eq!(phases[3], 0.0);
+        assert_relative_eq!(phases[4], 1.0);
     }
+
+    #[test]
+    fn test_compute_phase_single_element() {
+        let time = Array1::from_vec(vec![2.5]);
+        let phases = compute_phase(time.view(), 3.0);
+        assert_eq!(phases.len(), 1);
+        assert_relative_eq!(phases[0], 2.5);
+    }
+
+    #[test]
+    fn test_compute_phase_all_zeros() {
+        let time = Array1::from_vec(vec![0.0, 0.0, 0.0]);
+        let phases = compute_phase(time.view(), 5.0);
+        assert_eq!(phases.len(), 3);
+        for &p in &phases {
+            assert_relative_eq!(p, 0.0);
+        }
+    }
+
+    // ===== binning_operation tests =====
 
     #[test]
     fn test_binning_operation() {
         let phase: Vec<f64> = vec![0.0, 0.5, 1.0, 1.5, 2.0, 2.5];
-        let inv_freq: f64 = 3.0;
-        let n_bins: u64 = 6;
-
-        let bins = binning_operation(&phase, inv_freq, n_bins);
+        let bins = binning_operation(&phase, 3.0, 6);
 
         assert_eq!(bins.len(), 6);
-        assert_eq!(bins[0], 0); // 0.0 * (6/3) = 0
-        assert_eq!(bins[1], 1); // 0.5 * (6/3) = 1
-        assert_eq!(bins[2], 2); // 1.0 * (6/3) = 2
-        assert_eq!(bins[3], 3); // 1.5 * (6/3) = 3
-        assert_eq!(bins[4], 4); // 2.0 * (6/3) = 4
-        assert_eq!(bins[5], 5); // 2.5 * (6/3) = 5
+        assert_eq!(bins[0], 0);
+        assert_eq!(bins[1], 1);
+        assert_eq!(bins[2], 2);
+        assert_eq!(bins[3], 3);
+        assert_eq!(bins[4], 4);
+        assert_eq!(bins[5], 5);
     }
+
+    #[test]
+    fn test_binning_single_bin() {
+        let phase: Vec<f64> = vec![0.0, 0.3, 0.7, 0.99];
+        let bins = binning_operation(&phase, 1.0, 1);
+        assert_eq!(bins.len(), 4);
+        for &b in &bins {
+            assert_eq!(b, 0);
+        }
+    }
+
+    #[test]
+    fn test_binning_phase_at_boundary() {
+        // Phase exactly at inv_freq boundary wraps via modulo
+        let inv_freq = 2.0;
+        let n_bins: u64 = 4;
+        let phase: Vec<f64> = vec![0.0, 0.5, 1.0, 1.5];
+        let bins = binning_operation(&phase, inv_freq, n_bins);
+        assert_eq!(bins.len(), 4);
+        // All bin indices should be in [0, n_bins)
+        for &b in &bins {
+            assert!(b < n_bins);
+        }
+    }
+
+    // ===== bin_count_sum_operation tests =====
 
     #[test]
     fn test_bin_count_sum_operation() {
@@ -265,18 +340,57 @@ mod tests {
 
         bin_count_sum_operation(&mut bin_counts, &mut bin_sums, &bin_index, &signal.view());
 
-        assert_eq!(bin_counts[0], 2); // Two values in bin 0
-        assert_eq!(bin_counts[1], 2); // Two values in bin 1
-        assert_relative_eq!(bin_sums[0], 4.0); // 1.0 + 3.0
-        assert_relative_eq!(bin_sums[1], 6.0); // 2.0 + 4.0
+        assert_eq!(bin_counts[0], 2);
+        assert_eq!(bin_counts[1], 2);
+        assert_relative_eq!(bin_sums[0], 4.0);
+        assert_relative_eq!(bin_sums[1], 6.0);
     }
+
+    #[test]
+    fn test_bin_count_sum_all_one_bin() {
+        let signal = Array1::from_vec(vec![1.0, 2.0, 3.0]);
+        let bin_index = vec![0, 0, 0];
+        let mut bin_counts = vec![0; 3];
+        let mut bin_sums = vec![0.0; 3];
+
+        bin_count_sum_operation(&mut bin_counts, &mut bin_sums, &bin_index, &signal.view());
+
+        assert_eq!(bin_counts[0], 3);
+        assert_relative_eq!(bin_sums[0], 6.0);
+        // Other bins empty
+        assert_eq!(bin_counts[1], 0);
+        assert_eq!(bin_counts[2], 0);
+        assert_relative_eq!(bin_sums[1], 0.0);
+        assert_relative_eq!(bin_sums[2], 0.0);
+    }
+
+    #[test]
+    fn test_bin_count_sum_empty_bins() {
+        // 5 bins but data only in bins 0 and 4
+        let signal = Array1::from_vec(vec![10.0, 20.0]);
+        let bin_index = vec![0, 4];
+        let mut bin_counts = vec![0; 5];
+        let mut bin_sums = vec![0.0; 5];
+
+        bin_count_sum_operation(&mut bin_counts, &mut bin_sums, &bin_index, &signal.view());
+
+        assert_eq!(bin_counts[0], 1);
+        assert_eq!(bin_counts[1], 0);
+        assert_eq!(bin_counts[2], 0);
+        assert_eq!(bin_counts[3], 0);
+        assert_eq!(bin_counts[4], 1);
+        assert_relative_eq!(bin_sums[0], 10.0);
+        assert_relative_eq!(bin_sums[4], 20.0);
+    }
+
+    // ===== squared_diff_calculation tests =====
 
     #[test]
     fn test_squared_diff_calculation() {
         let signal = Array1::from_vec(vec![1.0, 3.0, 5.0, 7.0]);
         let bin_index = vec![0, 1, 0, 1];
-        let bin_means = vec![3.0, 5.0]; // Mean for bin 0 = 3.0, bin 1 = 5.0
-        let mean = 4.0; // Overall mean
+        let bin_means = vec![3.0, 5.0];
+        let mean = 4.0;
 
         let mut bin_squared_difference = vec![0.0; 2];
         let mut squared_difference = 0.0;
@@ -290,22 +404,20 @@ mod tests {
             &mean,
         );
 
-        // Bin 0: (3-1)² + (3-5)² = 4 + 4 = 8
         assert_relative_eq!(bin_squared_difference[0], 8.0);
-
-        // Bin 1: (5-3)² + (5-7)² = 4 + 4 = 8
         assert_relative_eq!(bin_squared_difference[1], 8.0);
-
-        // Total: (4-1)² + (4-3)² + (4-5)² + (4-7)² = 9 + 1 + 1 + 9 = 20
         assert_relative_eq!(squared_difference, 20.0);
     }
+
+    // ===== squared_diff_sigma_calculation tests =====
+
     #[test]
     fn test_squared_diff_sigma_calculation() {
         let signal = Array1::from_vec(vec![1.0, 2.0, 4.5, 5.5]);
         let sigma = Array1::from_vec(vec![1.0, 1.0, 1.0, 1.0]);
         let bin_index = vec![0, 0, 1, 1];
-        let bin_means = vec![3.0, 5.0]; // Mean for bin 0 = 3.0, bin 1 = 5.0
-        let mean = 4.0; // Overall mean
+        let bin_means = vec![3.0, 5.0];
+        let mean = 4.0;
 
         let mut bin_squared_difference = vec![0.0; 2];
         let mut squared_difference = 0.0;
@@ -320,14 +432,158 @@ mod tests {
             &sigma.view(),
         );
 
-        // Bin 0: |3-1|=2>=1 → (3-1)²=4, |3-2|=1>=1 → (3-2)²=1 → 5.0
+        // Bin 0: |3-1|=2>=1 → 4, |3-2|=1>=1 → 1 → 5.0
         assert_relative_eq!(bin_squared_difference[0], 5.0);
-
         // Bin 1: |5-4.5|=0.5<1 → skip, |5-5.5|=0.5<1 → skip → 0.0
         assert_relative_eq!(bin_squared_difference[1], 0.0);
-
-        // Total: |4-1|=3>=1 → 9, |4-2|=2>=1 → 4, |4-4.5|=0.5<1 → skip, |4-5.5|=1.5>=1 → 2.25
-        // = 9 + 4 + 2.25 = 15.25
+        // Total: 9 + 4 + 0 + 2.25 = 15.25
         assert_relative_eq!(squared_difference, 15.25);
+    }
+
+    #[test]
+    fn test_sigma_large_all_filtered() {
+        // Sigma so large that all differences are within sigma → both accumulators stay 0
+        let signal = Array1::from_vec(vec![1.0, 2.0, 3.0]);
+        let sigma = Array1::from_vec(vec![1000.0, 1000.0, 1000.0]);
+        let bin_index = vec![0, 1, 0];
+        let bin_means = vec![2.0, 2.0];
+        let mean = 2.0;
+
+        let mut bin_squared_difference = vec![0.0; 2];
+        let mut squared_difference = 0.0;
+
+        squared_diff_sigma_calculation(
+            &mut bin_squared_difference,
+            &mut squared_difference,
+            &bin_index,
+            &bin_means,
+            &signal.view(),
+            &mean,
+            &sigma.view(),
+        );
+
+        assert_relative_eq!(bin_squared_difference[0], 0.0);
+        assert_relative_eq!(bin_squared_difference[1], 0.0);
+        assert_relative_eq!(squared_difference, 0.0);
+    }
+
+    #[test]
+    fn test_sigma_tiny_none_filtered() {
+        // Sigma near zero → all differences are counted (same as no-sigma path)
+        let signal = Array1::from_vec(vec![1.0, 3.0, 5.0, 7.0]);
+        let sigma = Array1::from_vec(vec![1e-15, 1e-15, 1e-15, 1e-15]);
+        let bin_index = vec![0, 1, 0, 1];
+        let bin_means = vec![3.0, 5.0];
+        let mean = 4.0;
+
+        let mut bin_squared_difference = vec![0.0; 2];
+        let mut squared_difference = 0.0;
+
+        squared_diff_sigma_calculation(
+            &mut bin_squared_difference,
+            &mut squared_difference,
+            &bin_index,
+            &bin_means,
+            &signal.view(),
+            &mean,
+            &sigma.view(),
+        );
+
+        // Same as no-sigma: bin0=8, bin1=8, total=20
+        assert_relative_eq!(bin_squared_difference[0], 8.0);
+        assert_relative_eq!(bin_squared_difference[1], 8.0);
+        assert_relative_eq!(squared_difference, 20.0);
+    }
+
+    // ===== compute_theta tests =====
+
+    #[test]
+    fn test_compute_theta_known_frequency() {
+        // Sine wave at frequency 1.0 Hz → period = 1.0 s
+        // At the true frequency, theta should be close to 0
+        let n = 1000;
+        let freq = 1.0;
+        let period = 1.0 / freq;
+        let time_vec: Vec<f64> = (0..n).map(|i| i as f64 * period / n as f64 * 10.0).collect();
+        let signal_vec: Vec<f64> = time_vec
+            .iter()
+            .map(|&t| (2.0 * std::f64::consts::PI * freq * t).sin())
+            .collect();
+        let time = Array1::from_vec(time_vec);
+        let signal = Array1::from_vec(signal_vec);
+
+        let theta = compute_theta(time.view(), signal.view(), freq, 10).unwrap();
+        assert!(theta < 0.3, "theta at true frequency should be small, got {}", theta);
+    }
+
+    #[test]
+    fn test_compute_theta_wrong_frequency() {
+        // Sine wave at frequency 1.0 Hz, test at a very different frequency
+        let n = 1000;
+        let true_freq = 1.0;
+        let period = 1.0 / true_freq;
+        let time_vec: Vec<f64> = (0..n).map(|i| i as f64 * period / n as f64 * 10.0).collect();
+        let signal_vec: Vec<f64> = time_vec
+            .iter()
+            .map(|&t| (2.0 * std::f64::consts::PI * true_freq * t).sin())
+            .collect();
+        let time = Array1::from_vec(time_vec);
+        let signal = Array1::from_vec(signal_vec);
+
+        let wrong_freq = 3.7; // Not a harmonic
+        let theta = compute_theta(time.view(), signal.view(), wrong_freq, 10).unwrap();
+        assert!(theta > 0.7, "theta at wrong frequency should be close to 1, got {}", theta);
+    }
+
+    #[test]
+    fn test_compute_theta_freq_zero_errors() {
+        let time = Array1::from_vec(vec![0.0, 1.0, 2.0]);
+        let signal = Array1::from_vec(vec![1.0, 2.0, 3.0]);
+
+        let result = compute_theta(time.view(), signal.view(), 0.0, 2);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_compute_theta_identical_signal_errors() {
+        // All signal values identical → total squared difference = 0 → error
+        let time = Array1::from_vec(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
+        let signal = Array1::from_vec(vec![5.0, 5.0, 5.0, 5.0, 5.0]);
+
+        let result = compute_theta(time.view(), signal.view(), 1.0, 2);
+        assert!(result.is_err());
+    }
+
+    // ===== compute_theta_sigma tests =====
+
+    #[test]
+    fn test_compute_theta_sigma_basic() {
+        let n = 500;
+        let freq = 2.0;
+        let time_vec: Vec<f64> = (0..n).map(|i| i as f64 * 0.01).collect();
+        let signal_vec: Vec<f64> = time_vec
+            .iter()
+            .map(|&t| (2.0 * std::f64::consts::PI * freq * t).sin())
+            .collect();
+        // Small sigma so most differences are counted
+        let sigma_vec: Vec<f64> = vec![0.001; n];
+        let time = Array1::from_vec(time_vec);
+        let signal = Array1::from_vec(signal_vec);
+        let sigma = Array1::from_vec(sigma_vec);
+
+        let theta = compute_theta_sigma(time.view(), signal.view(), sigma.view(), freq, 10).unwrap();
+        assert!(theta > 0.0, "theta should be positive, got {}", theta);
+        assert!(theta <= 1.0, "theta should be <= 1, got {}", theta);
+    }
+
+    #[test]
+    fn test_compute_theta_sigma_all_within_sigma_errors() {
+        // Large sigma → all filtered → squared_difference = 0 → error
+        let time = Array1::from_vec(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
+        let signal = Array1::from_vec(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let sigma = Array1::from_vec(vec![1000.0, 1000.0, 1000.0, 1000.0, 1000.0]);
+
+        let result = compute_theta_sigma(time.view(), signal.view(), sigma.view(), 1.0, 2);
+        assert!(result.is_err());
     }
 }
