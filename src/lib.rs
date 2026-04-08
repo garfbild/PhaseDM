@@ -32,13 +32,14 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
             timing::enable_timing(false);
         } else {
             timing::enable_timing(true);
+            timing::reset_timers();
         }
 
         let time = time_section!("time check", error::check_time_array(py, time)?);
         let signal = time_section!("signal check", error::check_signal_array(py, signal)?);
 
         // if sigma is Some we check
-        let sigma = time_section!("signal check", {
+        let sigma = time_section!("sigma check", {
             if let Some(sigma) = sigma {
                 Some(error::check_sigma_array(py, sigma)?)
             } else {
@@ -52,6 +53,8 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         error::check_matching_length(time, signal, &sigma)?;
 
         error::check_min_less_max(min_freq, max_freq, n_freqs)?;
+
+        error::check_n_bins(n_bins, time.len())?;
 
         let freqs = time_section!(
             "generate_freqs",
@@ -93,14 +96,20 @@ fn phasedm(m: &Bound<'_, PyModule>) -> PyResult<()> {
         } else if p == 1.0 {
             return Ok(1.0);
         } else {
-            let d0 = { n - 1 } as f64;
-            let d1 = { n_bins - 1 } as f64;
-            let d2 = { n - n_bins } as f64;
-            let n = Beta::new(d2 / 2.0, d1 / 2.0).map_err(|e| {
+            if n <= n_bins {
+                return Err(PyValueError::new_err(format!(
+                    "n ({}) must be greater than n_bins ({})",
+                    n, n_bins
+                )));
+            }
+            let d0 = (n - 1) as f64;
+            let d1 = (n_bins - 1) as f64;
+            let d2 = (n - n_bins) as f64;
+            let beta_dist = Beta::new(d2 / 2.0, d1 / 2.0).map_err(|e| {
                 PyValueError::new_err(format!("Failed to create Beta distribution: {}", e))
             })?;
 
-            let result = n.inverse_cdf(p * d2 / d0);
+            let result = beta_dist.inverse_cdf(p * d2 / d0);
 
             Ok(result)
         }
